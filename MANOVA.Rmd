@@ -1,0 +1,216 @@
+```{r}
+# https://www.datanovia.com/en/lessons/one-way-manova-in-r/
+# https://gaopinghuang0.github.io/2017/11/20/MANOVA-notes-and-R-code
+# https://bookdown.org/steve_midway/DAR/understanding-anova-in-r.html#multiple-comparisons
+#install.packages(c("rstatix", "car", "broom", "xgboost","MANOVA.RM"))
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+library(car)
+library(broom)
+require(xgboost)
+library(MANOVA.RM)
+data <- read.csv('/Users/thu/Documents/brain-ai/Sleep/data_ver2.csv',sep=";")
+#problem_memory <- read.csv('/Users/apple/Documents/brain-ai/Sleep/problemsolving_memory_v2.csv',sep = ',')
+
+data2 <- data %>%
+  select(a, b, c, d, e, f, g, h, i, j, k, l) %>%
+  add_column(id = 1:nrow(data), .before = 1)
+head(data2)
+
+problem_memory <- data %>%
+  select(problem_solving, memory) %>%
+  add_column(id = 1:nrow(data), .before = 1)
+head(problem_memory)
+
+#data2[,3] <- as.double(data2[,3]) 
+
+variables_2 <- data2[,2:13]
+problem_memory_2 <- problem_memory[,2:3]
+head(problem_memory_2)
+```
+```{r}
+summary(variables_2)
+cor(variables_2)
+```
+
+```{r}
+#cor(problemsolving ,memory)
+```
+
+```{r}
+a <- variables_2$a
+b <- variables_2$b
+c <- variables_2$c
+d <- variables_2$d
+e <- variables_2$e
+f <- variables_2$f
+g <- variables_2$g
+h <- variables_2$h
+i <- variables_2$i
+j <- variables_2$j
+k <- variables_2$k
+l <- variables_2$l
+
+```
+
+```{r}
+library(psych)
+problemsolving <- problem_memory_2$problem_solving
+memory <- problem_memory_2$memory
+data_problem <- data.frame(variables_2,problemsolving,memory)
+#cor(data_problem)
+qqnorm(problemsolving)
+qqnorm(memory)
+#variable <- c(a*b*c*d*e*f*g*x*q*s)
+#describeBy(data_problem$a, data_problem$problemsolving)
+
+res.man.problem <- manova(cbind(memory, problemsolving) ~  a*b*c*d*e*f*g*h*i*j*k*l, data = problem_memory_2)
+summary(res.man.problem)
+# Look to see which differ
+summary.aov(res.man.problem)
+
+# Barplot
+boxplot(memory ~ a , data = problem_memory, xlab = 'a', ylab = 'memory')
+boxplot(memory ~ b , data = problem_memory, xlab = 'b', ylab = 'memory')
+boxplot(memory ~ c , data = problem_memory, xlab = 'c', ylab = 'memory')
+boxplot(memory ~ d , data = problem_memory, xlab = 'd', ylab = 'memory')
+boxplot(memory ~ e , data = problem_memory, xlab = 'e', ylab = 'memory')
+boxplot(memory ~ f , data = problem_memory, xlab = 'f', ylab = 'memory')
+boxplot(memory ~ g , data = problem_memory, xlab = 'g', ylab = 'memory')
+boxplot(memory ~ h , data = problem_memory, xlab = 'h', ylab = 'memory')
+boxplot(memory ~ i , data = problem_memory, xlab = 'i', ylab = 'memory')
+boxplot(memory ~ j , data = problem_memory, xlab = 'j', ylab = 'memory')
+boxplot(memory ~ k , data = problem_memory, xlab = 'k', ylab = 'memory')
+boxplot(memory ~ l , data = problem_memory, xlab = 'l', ylab = 'memory')
+
+boxplot(problemsolving ~ a , data = problem_memory, xlab = 'a', ylab = 'problemsolving')
+boxplot(problemsolving ~ b , data = problem_memory, xlab = 'b', ylab = 'problemsolving')
+boxplot(problemsolving ~ c , data = problem_memory, xlab = 'c', ylab = 'problemsolving')
+boxplot(problemsolving ~ d , data = problem_memory, xlab = 'd', ylab = 'problemsolving')
+boxplot(problemsolving ~ e , data = problem_memory, xlab = 'e', ylab = 'problemsolving')
+boxplot(problemsolving ~ f , data = problem_memory, xlab = 'f', ylab = 'problemsolving')
+boxplot(problemsolving ~ g , data = problem_memory, xlab = 'g', ylab = 'problemsolving')
+boxplot(problemsolving ~ h , data = problem_memory, xlab = 'h', ylab = 'problemsolving')
+boxplot(problemsolving ~ i , data = problem_memory, xlab = 'i', ylab = 'problemsolving')
+boxplot(problemsolving ~ j , data = problem_memory, xlab = 'j', ylab = 'problemsolving')
+boxplot(problemsolving ~ k , data = problem_memory, xlab = 'k', ylab = 'problemsolving')
+boxplot(problemsolving ~ l , data = problem_memory, xlab = 'l', ylab = 'problemsolving')
+
+
+
+library(gplots)
+plotmeans(problemsolving ~ a)
+plotmeans(problemsolving ~ b)
+plotmeans(problemsolving ~ c)
+plotmeans(problemsolving ~ d)
+plotmeans(problemsolving ~ e)
+plotmeans(problemsolving ~ f)
+plotmeans(problemsolving ~ g)
+plotmeans(problemsolving ~ h)
+plotmeans(problemsolving ~ i)
+plotmeans(problemsolving ~ j)
+plotmeans(problemsolving ~ k)
+plotmeans(problemsolving ~ l)
+
+plotmeans(memory ~ a)
+plotmeans(memory ~ b)
+plotmeans(memory ~ c)
+plotmeans(memory ~ d)
+plotmeans(memory ~ e)
+plotmeans(memory ~ f)
+plotmeans(memory ~ g)
+plotmeans(memory ~ h)
+plotmeans(memory ~ i)
+plotmeans(memory ~ j)
+plotmeans(memory ~ k)
+plotmeans(memory ~ l)
+
+
+```
+```{r}
+library(candisc)
+#prolem.memory.lm <- manova(cbind(memory, problemsolving) ~  a+b+c+d+e+f+g+s+a:b+b:c+a:e+f:g+b:x+c:x+b:c:x+b:c:s+c:d:s+e:x:s, data = problem_memory)
+prolem.memory.lm <- lm(cbind(memory, problemsolving) ~  a*b*c*d*e*f*g*h*i*j*k*l, data = problem_memory, intercept = TRUE)
+hyp <- matrix(c(0,1,-1,0,0,0),nrow = 1,ncol = 11)
+#linearHypothesis(prolem.memory.lm,hyp)
+summary(prolem.memory.lm)
+anova(prolem.memory.lm)
+```
+
+
+```{r}
+library(xgboost)
+library(caret)
+library(dummies)
+library(DiagrammeR)
+# xgboost
+# get 80% for train and 20% for test data
+x.train <- as.matrix(variables_2[1:357,])
+y.train <- as.matrix(memory[1:357])
+x.test <- as.matrix(variables_2[358:510,])
+y.test <- as.matrix(memory[358:510])
+m1_xgb <- xgboost( data = x.train, label = y.train, nrounds = 1000, objective = "reg:squarederror", early_stopping_rounds = 3, max_depth = 6, eta = .25)
+
+pred_xgb <- predict(m1_xgb, x.test)
+
+yhat <- pred_xgb
+library(caret)
+
+
+yhat = yhat
+y.test = y.test
+
+confusionMatrix (yhat, y.test)
+
+postResample(yhat,y.test)
+
+r <- y.test - yhat
+#plot(r, ylab = "residuals")
+
+plot(y.test,
+     yhat,
+     xlab = "actual",
+     ylab = "predicted")
+
+#plot first 3 trees of model
+xgb.plot.tree(model = m1_xgb, trees = 0:2)
+
+importance_matrix <- xgb.importance(model = m1_xgb)
+xgb.plot.importance(importance_matrix, xlab = "Feature Importance")
+
+```
+
+```{r}
+
+x.train <- as.matrix(variables_2[36:175,1:7])
+y.train <- as.matrix(problemsolving[36:175])
+x.test <- as.matrix(variables_2[1:35,1:7])
+y.test <- as.matrix(problemsolving[1:35])
+m1_xgb <- xgboost( data = x.train, label = ifelse(y.train > 5, 1, 0), nrounds = 1000, objective = "reg:squarederror", early_stopping_rounds = 3, max_depth = 6, eta = .25)
+
+pred_xgb <- predict(m1_xgb, x.test)
+
+yhat <- pred_xgb
+postResample(yhat,y.test)
+
+yhat = as.factor(ifelse(yhat > 5, 1, 0))
+y.test = as.factor(ifelse(y.test > 5, 1, 0))
+
+confusionMatrix (yhat, y.test)
+
+r <- y.test - yhat
+
+plot(y.test,
+     yhat,
+     xlab = "actual",
+     ylab = "predicted",)
+abline(lm(yhat ~ y.test))
+
+#plot first 3 trees of model
+xgb.plot.tree(model = m1_xgb, trees = 0:2)
+
+importance_matrix <- xgb.importance(model = m1_xgb)
+xgb.plot.importance(importance_matrix, xlab = "Feature Importance")
+```
+
